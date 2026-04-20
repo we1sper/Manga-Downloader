@@ -46,7 +46,7 @@ func (srv *HttpServer) RegisterHandler(pattern string, handler func(http.Respons
 		handler(w, r)
 	})
 	srv.server.Handler = &srv.serveMux
-	log.Infof("[server][http] pattern %s registered", pattern)
+	log.Infof("[server][http] pattern '%s' registered", pattern)
 	return srv
 }
 
@@ -78,6 +78,10 @@ func (srv *HttpServer) Stop() {
 	if err := srv.server.Shutdown(context.Background()); err != nil {
 		log.Errorf("[server][http] error occurred while shutting down the server: %v", err)
 	}
+
+	for _, hook := range srv.onShutdownHooks {
+		hook()
+	}
 }
 
 func (srv *HttpServer) AllowCORS() *HttpServer {
@@ -88,9 +92,6 @@ func (srv *HttpServer) listenSignals() {
 	signal.Notify(srv.sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-srv.sigChan
-		for _, hook := range srv.onShutdownHooks {
-			hook()
-		}
 		srv.Stop()
 	}()
 }

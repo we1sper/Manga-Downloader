@@ -6,6 +6,7 @@ require (
 	github.com/dop251/goja v0.0.0-20260311135729-065cd970411c
 	github.com/sirupsen/logrus v1.9.4
 	github.com/we1sper/go-html-retriever v0.0.1
+	github.com/we1sper/go-map-retriever v0.0.2
 )
 
 require (

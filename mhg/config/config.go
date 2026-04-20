@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	ApiServerPort  uint32
 	Retry          uint32
 	Cookie         string
 	SaveDir        string
