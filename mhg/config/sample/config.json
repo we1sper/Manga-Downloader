@@ -1,0 +1,10 @@
+{
+  "Retry": 4,
+  "Cookie": "<your_cookie>",
+  "SaveDir": "/path/to/save_directory",
+  "Proxy": "<your_http_proxy>",
+  "ScriptLocation": "/path/to/script",
+  "Concurrency": 3,
+  "Timeout": 30000,
+  "Overwrite": false
+}
