@@ -206,7 +206,7 @@ func (s *ApiServer) downloader(id int) {
 					record["elapsed"] = fmt.Sprintf("%vm", elapsed.Minutes())
 				})
 
-				log.Infof("[downloader][%d][%s][%s] succeeded using %dms", id, chapter.MangaName, chapter.Name, elapsed.Minutes())
+				log.Infof("[downloader][%d][%s][%s] succeeded using %vm", id, chapter.MangaName, chapter.Name, elapsed.Minutes())
 			}
 		default:
 			time.Sleep(100 * time.Millisecond)
