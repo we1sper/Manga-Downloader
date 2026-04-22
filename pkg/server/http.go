@@ -96,7 +96,7 @@ func (srv *HttpServer) listenSignals() {
 	}()
 }
 
-func (srv *HttpServer) setCORSHeaders(w http.ResponseWriter, r *http.Request) {
+func (srv *HttpServer) setCORSHeaders(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")

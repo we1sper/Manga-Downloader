@@ -57,9 +57,9 @@ func TestApiServer_queryManga(t *testing.T) {
 		t.Fatalf("query manga error: status code %v", resp.StatusCode)
 	}
 
-	bytes, _ := io.ReadAll(resp.Body)
+	_bytes, _ := io.ReadAll(resp.Body)
 	_ = resp.Body.Close()
-	fmt.Println(string(bytes))
+	fmt.Println(string(_bytes))
 
 	apiServer.Stop()
 }
@@ -98,9 +98,9 @@ func TestApiServer_downloadChapters(t *testing.T) {
 		t.Fatalf("submit task error: status code %v", resp.StatusCode)
 	}
 
-	bytes, _ := io.ReadAll(resp.Body)
+	_bytes, _ := io.ReadAll(resp.Body)
 	_ = resp.Body.Close()
-	fmt.Println(string(bytes))
+	fmt.Println(string(_bytes))
 
 	for {
 		resp, err = client.Get("http://localhost:8080/query/records")
@@ -109,9 +109,9 @@ func TestApiServer_downloadChapters(t *testing.T) {
 		}
 
 		var raw []interface{}
-		bytes, _ = io.ReadAll(resp.Body)
+		_bytes, _ = io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
-		_ = json.Unmarshal(bytes, &raw)
+		_ = json.Unmarshal(_bytes, &raw)
 
 		v := mapretriever.NewMapRetriever(raw)
 

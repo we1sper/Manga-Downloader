@@ -19,7 +19,7 @@ import (
 var (
 	routines     = 16
 	chanSize     = 16384
-	recordFields = []string{"manga_id", "manga_name", "chapter_id", "chapter_name", "progress", "status", "count", "total"}
+	recordFields = []string{"mid", "mname", "cid", "cname", "progress", "status", "count", "total"}
 )
 
 type DownloadRequest struct {
@@ -120,7 +120,7 @@ func (s *ApiServer) queryManga(writer http.ResponseWriter, request *http.Request
 	s.response(writer, http.StatusOK, manga)
 }
 
-func (s *ApiServer) queryRecords(writer http.ResponseWriter, request *http.Request) {
+func (s *ApiServer) queryRecords(writer http.ResponseWriter, _ *http.Request) {
 	records := make([]map[string]interface{}, 0)
 
 	s.lock.RLock()
@@ -288,13 +288,13 @@ func (s *ApiServer) submitTask(chapter *Chapter) {
 
 	for _, field := range recordFields {
 		switch field {
-		case "manga_id":
+		case "mid":
 			s.records[key][field] = chapter.MangaId
-		case "manga_name":
+		case "mname":
 			s.records[key][field] = chapter.MangaName
-		case "chapter_id":
+		case "cid":
 			s.records[key][field] = chapter.Id
-		case "chapter_name":
+		case "cname":
 			s.records[key][field] = chapter.Name
 		case "progress":
 			s.records[key][field] = 0.0
