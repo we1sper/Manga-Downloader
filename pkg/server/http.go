@@ -77,12 +77,12 @@ func (srv *HttpServer) Start() {
 }
 
 func (srv *HttpServer) Stop() {
-	if err := srv.server.Shutdown(context.Background()); err != nil {
-		log.Errorf("[server][http] error occurred while shutting down the server: %v", err)
-	}
-
 	for _, hook := range srv.onShutdownHooks {
 		hook()
+	}
+
+	if err := srv.server.Shutdown(context.Background()); err != nil {
+		log.Errorf("[server][http] error occurred while shutting down the server: %v", err)
 	}
 }
 

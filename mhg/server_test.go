@@ -16,6 +16,7 @@ import (
 func TestApiServer_Run(t *testing.T) {
 	cfg := config.Default()
 	cfg.ApiServerPort = 8080
+	cfg.Proxy = "http://localhost:10808"
 
 	apiServer, err := NewApiServer(cfg)
 	if err != nil {
