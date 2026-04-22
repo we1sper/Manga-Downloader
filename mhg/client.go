@@ -22,6 +22,7 @@ type Manga struct {
 	Introduction string              `json:"introduction"`
 	Date         string              `json:"date"`
 	Status       string              `json:"status"`
+	Cover        string              `json:"cover"`
 	Contents     []map[string]string `json:"contents"`
 }
 
@@ -84,6 +85,7 @@ func (m *ManHuaGuiClient) QueryManga(mangaId uint64) (*Manga, error) {
 		Id:           mangaId,
 		Name:         parent.GetElementsByClassName("book-title").First().GetElementsByTagName("h1").First().Unsafe().GetText(),
 		Introduction: strings.Join(parent.GetElementById("intro-all").ExtractTexts(), "\n"),
+		Cover:        "https:" + parent.GetElementsByClassName("hcover").GetElementsByTagName("img").First().Unsafe().GetAttr("src"),
 	}
 
 	detail := parent.GetElementsByClassName("detail-list", "cf").First().ExtractTexts()

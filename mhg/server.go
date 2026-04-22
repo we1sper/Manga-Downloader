@@ -98,7 +98,7 @@ func (s *ApiServer) destroy() {
 
 func (s *ApiServer) queryManga(writer http.ResponseWriter, request *http.Request) {
 	// Get query parameter 'mid'.
-	mid, err := s.getParameter(request, "mid")
+	mid, err := s.getIntParameter(request, "mid")
 	if err != nil {
 		s.response(writer, http.StatusBadRequest, err.Error())
 		return
@@ -139,14 +139,14 @@ func (s *ApiServer) queryRecords(writer http.ResponseWriter, request *http.Reque
 
 func (s *ApiServer) downloadChapters(writer http.ResponseWriter, request *http.Request) {
 	// Get query parameter 'mid'.
-	mid, err := s.getParameter(request, "mid")
+	mid, err := s.getIntParameter(request, "mid")
 	if err != nil {
 		s.response(writer, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Get query parameter 'cid'.
-	cid, err := s.getParameter(request, "cid")
+	cid, err := s.getIntParameter(request, "cid")
 	if err != nil {
 		s.response(writer, http.StatusBadRequest, err.Error())
 		return
@@ -214,7 +214,7 @@ func (s *ApiServer) downloader(id int) {
 	}
 }
 
-func (s *ApiServer) getParameter(request *http.Request, parameter string) (int, error) {
+func (s *ApiServer) getIntParameter(request *http.Request, parameter string) (int, error) {
 	value := request.URL.Query().Get(parameter)
 
 	if len(value) == 0 {

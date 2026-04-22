@@ -26,6 +26,7 @@ func TestManHuaGuiClient_QueryManga(t *testing.T) {
 	t.Logf("introduction: %v\n", manga.Introduction)
 	t.Logf("date: %v\n", manga.Date)
 	t.Logf("status: %v\n", manga.Status)
+	t.Logf("cover: %v\n", manga.Cover)
 	t.Logf("contents: %v\n", manga.Contents)
 }
 
