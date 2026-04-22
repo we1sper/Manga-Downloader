@@ -36,7 +36,14 @@ func NewHttpServer(address string, port int) *HttpServer {
 	}
 }
 
-func (srv *HttpServer) RegisterHandler(pattern string, handler func(http.ResponseWriter, *http.Request)) *HttpServer {
+func (srv *HttpServer) RegisterHandler(pattern string, handler http.Handler) *HttpServer {
+	srv.serveMux.Handle(pattern, handler)
+	srv.server.Handler = &srv.serveMux
+	log.Infof("[server][http] pattern '%s' registered", pattern)
+	return srv
+}
+
+func (srv *HttpServer) RegisterHandlerFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) *HttpServer {
 	srv.serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// Step 1: execute pre-handle hooks.
 		for _, hook := range srv.preHandleHooks {

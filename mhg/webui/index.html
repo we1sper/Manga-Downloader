@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ManHuaGui WebUI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Particle background system -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <div class="container">
+        <!-- Header with search -->
+        <header class="header">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input
+                        type="number"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Enter manga ID"
+                        min="0"
+                    >
+                    <button id="clearSearchButton" class="clear-search-button hidden">×</button>
+                </div>
+                <div class="search-input-container">
+                    <button id="searchButton" class="search-button">Search</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="main-content">
+            <!-- Search Results Section -->
+            <section id="searchResultSection" class="section">
+                <h2>Search Results</h2>
+                <div id="searchLoadingSpinner" class="search-loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading...</p>
+                </div>
+                <div id="searchResultsContent" class="search-results-content">
+                    <div id="mangaInfo" class="manga-info hidden"></div>
+                    <div class="chapters-container">
+                        <div class="chapters-toolbar">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox">
+                                <span>Select All</span>
+                            </label>
+                            <button id="submitDownloadButton" class="submit-download-button">Submit Download</button>
+                        </div>
+                        <div id="submitLoadingSpinner" class="submit-loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Submitting...</p>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="chaptersTable" class="chapters-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;"></th>
+                                        <th class="sortable" data-sort="title">Title <span class="sort-icon"></span></th>
+                                        <th class="sortable" data-sort="pages">Pages <span class="sort-icon"></span></th>
+                                        <th>Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chaptersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Download Tasks Section -->
+            <section id="tasksSection" class="section">
+                <h2>Download Tasks</h2>
+                <div class="tasks-subsection">
+                    <h3>Ongoing</h3>
+                    <div class="tasks-toolbar">
+                        <button id="bulkRetryButton" class="bulk-retry-button hidden">Retry Failed</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="tasks-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;"></th>
+                                    <th>Manga Name</th>
+                                    <th>Chapter Name</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                    <th style="width: 100px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ongoingTasksBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tasks-subsection">
+                    <h3>Historical</h3>
+                    <div class="table-wrapper">
+                        <table class="tasks-table">
+                            <thead>
+                                <tr>
+                                    <th>Manga Name</th>
+                                    <th>Chapter Name</th>
+                                    <th>Result</th>
+                                    <th>Completed At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historicalTasksBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast notification container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

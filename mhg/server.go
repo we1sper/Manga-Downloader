@@ -2,9 +2,11 @@ package mhg
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"slices"
 	"strconv"
@@ -15,6 +17,9 @@ import (
 	"github.com/we1sper/Manga-Downloader/pkg/log"
 	"github.com/we1sper/Manga-Downloader/pkg/server"
 )
+
+//go:embed webui/*
+var fronts embed.FS
 
 var (
 	routines     = 16
@@ -54,10 +59,17 @@ func NewApiServer(cfg *config.Config) (*ApiServer, error) {
 
 	// Register APIs.
 	apiServer.server = server.NewHttpServer("", int(cfg.ApiServerPort)).AllowCORS().
-		RegisterHandler("/query/manga", apiServer.queryManga).
-		RegisterHandler("/query/records", apiServer.queryRecords).
-		RegisterHandler("/download/chapters", apiServer.downloadChapters).
+		RegisterHandlerFunc("/query/manga", apiServer.queryManga).
+		RegisterHandlerFunc("/query/records", apiServer.queryRecords).
+		RegisterHandlerFunc("/download/chapters", apiServer.downloadChapters).
 		RegisterOnShutdownHook(apiServer.destroy)
+
+	// Create and register a file server for webui.
+	_fs, err := fs.Sub(fronts, "webui")
+	if err != nil {
+		return nil, err
+	}
+	apiServer.server.RegisterHandler("/", http.FileServer(http.FS(_fs)))
 
 	apiServer.context, apiServer.cancel = context.WithCancel(context.Background())
 
