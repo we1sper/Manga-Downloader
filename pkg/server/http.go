@@ -20,7 +20,7 @@ type HttpServer struct {
 	serveMux http.ServeMux
 
 	sigChan         chan os.Signal
-	preHandleHooks  []func(w http.ResponseWriter, r *http.Request)
+	preHandleHooks  []func(w http.ResponseWriter, r *http.Request) bool
 	onShutdownHooks []func()
 }
 
@@ -31,7 +31,7 @@ func NewHttpServer(address string, port int) *HttpServer {
 		server:          http.Server{},
 		serveMux:        http.ServeMux{},
 		sigChan:         make(chan os.Signal, 1),
-		preHandleHooks:  make([]func(w http.ResponseWriter, r *http.Request), 0),
+		preHandleHooks:  make([]func(w http.ResponseWriter, r *http.Request) bool, 0),
 		onShutdownHooks: make([]func(), 0),
 	}
 }
@@ -40,7 +40,9 @@ func (srv *HttpServer) RegisterHandler(pattern string, handler func(http.Respons
 	srv.serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// Step 1: execute pre-handle hooks.
 		for _, hook := range srv.preHandleHooks {
-			hook(w, r)
+			if !hook(w, r) {
+				return
+			}
 		}
 		// Step 2: execute handler.
 		handler(w, r)
@@ -50,7 +52,7 @@ func (srv *HttpServer) RegisterHandler(pattern string, handler func(http.Respons
 	return srv
 }
 
-func (srv *HttpServer) RegisterPreHandleHook(hook func(http.ResponseWriter, *http.Request)) *HttpServer {
+func (srv *HttpServer) RegisterPreHandleHook(hook func(http.ResponseWriter, *http.Request) bool) *HttpServer {
 	srv.preHandleHooks = append(srv.preHandleHooks, hook)
 	return srv
 }
@@ -96,9 +98,12 @@ func (srv *HttpServer) listenSignals() {
 	}()
 }
 
-func (srv *HttpServer) setCORSHeaders(w http.ResponseWriter, _ *http.Request) {
+func (srv *HttpServer) setCORSHeaders(w http.ResponseWriter, r *http.Request) bool {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+	// For preflight requests, we only need to set the headers and return.
+	return r.Method != http.MethodOptions
 }
