@@ -1,6 +1,7 @@
 package mhg
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -52,6 +53,8 @@ func TestApiServer_queryManga(t *testing.T) {
 	resp, err := client.Get("http://localhost:8080/query/manga?mid=35652")
 	if err != nil {
 		t.Fatalf("query manga error: %v", err)
+	} else if resp.StatusCode != http.StatusOK {
+		t.Fatalf("query manga error: status code %v", resp.StatusCode)
 	}
 
 	bytes, _ := io.ReadAll(resp.Body)
@@ -78,10 +81,21 @@ func TestApiServer_downloadChapters(t *testing.T) {
 
 	client := &http.Client{}
 
-	request, _ := http.NewRequest("POST", "http://localhost:8080/download/chapters?mid=35652&cid=487852", nil)
+	data := []map[string]interface{}{
+		{
+			"mid": 35652,
+			"cid": 487852,
+		},
+	}
+
+	payload, _ := json.Marshal(data)
+	request, _ := http.NewRequest("POST", "http://localhost:8080/download/chapters", bytes.NewReader(payload))
+
 	resp, err := client.Do(request)
 	if err != nil {
-		t.Fatalf("query manga error: %v", err)
+		t.Fatalf("submit task error: %v", err)
+	} else if resp.StatusCode != http.StatusOK {
+		t.Fatalf("submit task error: status code %v", resp.StatusCode)
 	}
 
 	bytes, _ := io.ReadAll(resp.Body)

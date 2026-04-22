@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"slices"
 	"strconv"
@@ -16,9 +17,15 @@ import (
 )
 
 var (
+	routines     = 16
 	chanSize     = 16384
 	recordFields = []string{"manga_id", "manga_name", "chapter_id", "chapter_name", "progress", "status", "count", "total"}
 )
+
+type DownloadRequest struct {
+	MangaId   uint64 `json:"mid"`
+	ChapterId uint64 `json:"cid"`
+}
 
 type ApiServer struct {
 	server   *server.HttpServer
@@ -138,33 +145,57 @@ func (s *ApiServer) queryRecords(writer http.ResponseWriter, request *http.Reque
 }
 
 func (s *ApiServer) downloadChapters(writer http.ResponseWriter, request *http.Request) {
-	// Get query parameter 'mid'.
-	mid, err := s.getIntParameter(request, "mid")
-	if err != nil {
-		s.response(writer, http.StatusBadRequest, err.Error())
+	if request.Method != http.MethodPost {
+		s.response(writer, http.StatusMethodNotAllowed, "only POST method is allowed")
 		return
 	}
 
-	// Get query parameter 'cid'.
-	cid, err := s.getIntParameter(request, "cid")
-	if err != nil {
-		s.response(writer, http.StatusBadRequest, err.Error())
+	bytes, _ := io.ReadAll(request.Body)
+
+	var requests []*DownloadRequest
+	if err := json.Unmarshal(bytes, &requests); err != nil {
+		s.response(writer, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
 		return
 	}
 
-	// Construct URL of queried chapter by manga ID and chapter ID.
-	url := fmt.Sprintf("https://www.manhuagui.com/comic/%d/%d.html", mid, cid)
+	response := make([]map[string]interface{}, 0)
 
-	chapter, err := s.client.QueryChapter(url)
-	if err != nil {
-		s.response(writer, http.StatusInternalServerError, fmt.Sprintf("failed to submit download task for chapter %d of manga %d: %v", cid, mid, err))
-		return
+	var wg sync.WaitGroup
+	var lock sync.RWMutex
+
+	submitter := func(id int) {
+		for i := id; i < len(requests); i += routines {
+			// Construct URL of queried chapter by manga ID and chapter ID.
+			url := fmt.Sprintf("https://www.manhuagui.com/comic/%d/%d.html", requests[i].MangaId, requests[i].ChapterId)
+
+			result := map[string]interface{}{
+				"mid": requests[i].MangaId,
+				"cid": requests[i].ChapterId,
+			}
+
+			chapter, err := s.client.QueryChapter(url)
+			if err != nil {
+				result["status"] = fmt.Sprintf("error: %v", err)
+			} else {
+				s.submitTask(chapter)
+				result["status"] = "ok"
+			}
+
+			lock.Lock()
+			response = append(response, result)
+			lock.Unlock()
+		}
+		wg.Done()
 	}
 
-	// Record and submit the task.
-	s.submitTask(chapter)
+	for id := 0; id < routines; id++ {
+		wg.Add(1)
+		go submitter(id)
+	}
 
-	s.response(writer, http.StatusOK, fmt.Sprintf("download task for chapter %d of manga %d submitted", cid, mid))
+	wg.Wait()
+
+	s.response(writer, http.StatusOK, response)
 }
 
 func (s *ApiServer) downloader(id int) {
@@ -206,7 +237,7 @@ func (s *ApiServer) downloader(id int) {
 					record["elapsed"] = fmt.Sprintf("%vm", elapsed.Minutes())
 				})
 
-				log.Infof("[downloader][%d][%s][%s] succeeded using %vm", id, chapter.MangaName, chapter.Name, elapsed.Minutes())
+				log.Infof("[downloader][%d][%s][%s] succeeded using %.2fm", id, chapter.MangaName, chapter.Name, elapsed.Minutes())
 			}
 		default:
 			time.Sleep(100 * time.Millisecond)
